@@ -24,5 +24,6 @@ hs_err_pid*
 replay_pid*
 /apache-tomcat/
 /.idea/
+/dhis2-core/
 /dhis2/
 /sw/

@@ -25,5 +25,6 @@ replay_pid*
 /apache-tomcat/
 /.idea/
 /dhis2-core/
+/dhis2-e2e/
 /dhis2/
 /sw/

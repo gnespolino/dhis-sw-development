@@ -48,15 +48,20 @@ else
 fi
 
 # creates a temp folder to store the config
-TEMP_CONF_FOLDER=$(mktemp -d)
-log "Temp folder created at "$TEMP_CONF_FOLDER
+TMP_DHIS2_HOME=$(mktemp -d)
+TMP_DHIS2_FILES_DIR=$TMP_DHIS2_HOME/files
+TMP_DHIS2_LOGS_DIR=$TMP_DHIS2_HOME/logs
+
+DHIS2_CONFIG_FILE=$TMP_DHIS2_HOME/dhis.conf
+
+log "Temp folder created at "$TMP_DHIS2_HOME
 
 # creates config, config/files and config/logs folder under temp
-mkdir -p $TEMP_CONF_FOLDER/config
-mkdir -p $TEMP_CONF_FOLDER/config/files
-mkdir -p $TEMP_CONF_FOLDER/config/logs
+mkdir -p $TMP_DHIS2_HOME
+mkdir -p $TMP_DHIS2_FILES_DIR
+mkdir -p $TMP_DHIS2_LOGS_DIR
 
-echo "connection.driver_class = "${CONNECTION_DRIVER_CLASS:-org.postgresql.Driver} >> $TEMP_CONF_FOLDER/dhis.conf
+echo "connection.driver_class = "${CONNECTION_DRIVER_CLASS:-org.postgresql.Driver} >> $DHIS2_CONFIG_FILE
 
 if [ -z "$DB_NAME" ]
 then
@@ -69,9 +74,9 @@ else
     CONNECTION_URL_VAL="jdbc:postgresql:$DB_NAME"
 fi
 
-echo "connection.url = "$CONNECTION_URL_VAL >> $TEMP_CONF_FOLDER/dhis.conf
-echo "connection.username = "${CONNECTION_USERNAME:-dhis} >> $TEMP_CONF_FOLDER/dhis.conf
-echo "connection.password = "${CONNECTION_PASSWORD:-password} >> $TEMP_CONF_FOLDER/dhis.conf
+echo "connection.url = "$CONNECTION_URL_VAL >> $DHIS2_CONFIG_FILE
+echo "connection.username = "${CONNECTION_USERNAME:-dhis} >> $DHIS2_CONFIG_FILE
+echo "connection.password = "${CONNECTION_PASSWORD:-password} >> $DHIS2_CONFIG_FILE
 
 # setup citus extension if enabled
 if [ -z "$ANALITYCS_CITUS_EXTENSION" ]
@@ -80,7 +85,7 @@ then
 else
     log "ANALITYCS_CITUS_EXTENSION is enabled"
     log "Setting up citus extension"
-    echo "analytics.citus.extension = "${ANALITYCS_CITUS_EXTENSION:-OFF} >> $TEMP_CONF_FOLDER/dhis.conf
+    echo "analytics.citus.extension = "${ANALITYCS_CITUS_EXTENSION:-OFF} >> $DHIS2_CONFIG_FILE
 fi
 
 if [ "$ANALYTICS_DATABASE_ENABLED" = "TRUE" ]
@@ -96,31 +101,31 @@ then
     else
         ANALYTICS_CONNECTION_URL_VAL="jdbc:postgresql:$ANALYTICS_DB_NAME"
     fi
-    echo "analytics.connection.url = "$ANALYTICS_CONNECTION_URL_VAL >> $TEMP_CONF_FOLDER/dhis.conf
-    echo "analytics.connection.username = "${ANALYTICS_CONNECTION_USERNAME:-dhis} >> $TEMP_CONF_FOLDER/dhis.conf
-    echo "analytics.connection.password = "${ANALYTICS_CONNECTION_PASSWORD:-password} >> $TEMP_CONF_FOLDER/dhis.conf
+    echo "analytics.connection.url = "$ANALYTICS_CONNECTION_URL_VAL >> $DHIS2_CONFIG_FILE
+    echo "analytics.connection.username = "${ANALYTICS_CONNECTION_USERNAME:-dhis} >> $DHIS2_CONFIG_FILE
+    echo "analytics.connection.password = "${ANALYTICS_CONNECTION_PASSWORD:-password} >> $DHIS2_CONFIG_FILE
 else
     log "Analytics database is not enabled"
 fi
 
 # variuos hardcoded values
-echo "server.https = off" >> $TEMP_CONF_FOLDER/dhis.conf
-echo "server.base.url = http://localhost/" >> $TEMP_CONF_FOLDER/dhis.conf
-echo "tracker.import.preheat.cache.enabled = off" >> $TEMP_CONF_FOLDER/dhis.conf
+echo "server.https = off" >> $DHIS2_CONFIG_FILE
+echo "server.base.url = http://localhost/" >> $DHIS2_CONFIG_FILE
+echo "tracker.import.preheat.cache.enabled = off" >> $DHIS2_CONFIG_FILE
 
 # print the dhis.conf to standard error
 log
-log "dhis.conf created at "$TEMP_CONF_FOLDER
+log "dhis.conf created at "$TMP_DHIS2_HOME
 log
 log "######################################################################################"
-cat $TEMP_CONF_FOLDER/dhis.conf 1>&2
+cat $DHIS2_CONFIG_FILE 1>&2
 log "######################################################################################"
 log
 #return the path to the dhis.conf
 log
-log "return value for the caller: "$TEMP_CONF_FOLDER
+log "return value for the caller: "$TMP_DHIS2_HOME
 log
-echo $TEMP_CONF_FOLDER
+echo $TMP_DHIS2_HOME
 
 
 

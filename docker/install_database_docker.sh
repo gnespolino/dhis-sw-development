@@ -15,8 +15,8 @@ if [ -z "$env" ]
 then
   exit 1
 else
-	db=dhis2_$env
-	url=https://databases.dhis2.org/sierra-leone/$env/dhis2-db-sierra-leone.sql.gz
+  db=dhis2_$env
+  url=https://databases.dhis2.org/sierra-leone/$env/dhis2-db-sierra-leone.sql.gz
 fi
 
 # replace dots and slashes with underscores

@@ -50,6 +50,7 @@ wget $url -O ${tmp_dir}/${db_file_name}".gz" && gunzip $tmp_dir/$db_file_name".g
 psql postgres postgres << END_OF_SCRIPT
 DROP DATABASE IF EXISTS $db;
 CREATE DATABASE $db WITH OWNER dhis  ENCODING 'UTF8';
+GRANT ALL PRIVILEGES ON DATABASE $db TO dhis;
 \c $db
 CREATE EXTENSION postgis;
 CREATE EXTENSION citus;
@@ -64,6 +65,7 @@ do
   ssh $worker "psql postgres postgres << END_OF_SCRIPT
 DROP DATABASE IF EXISTS $db;
 CREATE DATABASE $db WITH OWNER dhis ENCODING 'UTF8';
+GRANT ALL PRIVILEGES ON DATABASE $db TO dhis;
 \c $db
 CREATE EXTENSION postgis;
 CREATE EXTENSION citus;

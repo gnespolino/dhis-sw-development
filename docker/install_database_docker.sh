@@ -32,11 +32,12 @@ for container in "${containers[@]}"
 do
   docker exec $container psql -c "DROP DATABASE IF EXISTS $db;"
   docker exec $container psql -c "CREATE DATABASE $db WITH OWNER dhis ENCODING 'UTF8';"
-  docker exec $container psql "$db" -c "create extension citus;"
-  docker exec $container psql "$db" -c "create extension postgis;"
+  docker exec $container psql -c "GRANT ALL PRIVILEGES ON DATABASE $db TO dhis;"
+  docker exec $container psql "$db" -c "CREATE EXTENSION citus;"
+  docker exec $container psql "$db" -c "CREATE EXTENSION postgis;"
 done
 
-docker exec citus_master psql -c "GRANT ALL PRIVILEGES ON DATABASE $db TO dhis;"
+docker exec citus_master psql "$db" -c "SELECT citus_set_coordinator_host('master', 5432);"
 docker exec -i citus_master psql "$db" -U dhis <$tmp_dir/$db_file_name
 
 # setup the worker

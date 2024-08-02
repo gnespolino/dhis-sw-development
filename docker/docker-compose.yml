@@ -1,9 +1,12 @@
 services:
   master:
     container_name: "${COMPOSE_PROJECT_NAME:-citus}_master"
+    shm_size: 1g
     image: 'citus-postgis:latest'
     ports: [ "${COORDINATOR_EXTERNAL_PORT:-5432}:5432" ]
     labels: [ 'com.citusdata.role=Master' ]
+    external_links:
+      - worker:worker
     environment: &PG_ENV
       POSTGRES_USER: "${POSTGRES_USER:-postgres}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
@@ -12,15 +15,20 @@ services:
       POSTGRES_HOST_AUTH_METHOD: "${POSTGRES_HOST_AUTH_METHOD:-trust}"
     volumes:
       - citus-master:/var/lib/postgresql/data
+    restart: unless-stopped
   worker:
     image: 'citus-postgis:latest'
+    shm_size: 1g
     labels: [ 'com.citusdata.role=Worker' ]
+    external_links:
+      - master:master
     depends_on: [ manager ]
     environment: *PG_ENV
     command: "/wait-for-manager.sh"
     volumes:
       - healthcheck-volume:/healthcheck
       - citus-worker:/var/lib/postgresql/data
+    restart: unless-stopped
   manager:
     container_name: "${COMPOSE_PROJECT_NAME:-citus}_manager"
     image: 'citusdata/membership-manager:0.3.0'
@@ -29,6 +37,7 @@ services:
       - healthcheck-volume:/healthcheck
     depends_on: [ master ]
     environment: *PG_ENV
+    restart: unless-stopped
 volumes:
   healthcheck-volume:
   citus-master:

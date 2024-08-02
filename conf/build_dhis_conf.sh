@@ -104,6 +104,7 @@ then
     echo "analytics.connection.url = "$ANALYTICS_CONNECTION_URL_VAL >> $DHIS2_CONFIG_FILE
     echo "analytics.connection.username = "${ANALYTICS_CONNECTION_USERNAME:-dhis} >> $DHIS2_CONFIG_FILE
     echo "analytics.connection.password = "${ANALYTICS_CONNECTION_PASSWORD:-password} >> $DHIS2_CONFIG_FILE
+    echo "analytics.citus.extension = "${ANALITYCS_CITUS_EXTENSION:-OFF} >> $DHIS2_CONFIG_FILE
 else
     log "Analytics database is not enabled"
 fi

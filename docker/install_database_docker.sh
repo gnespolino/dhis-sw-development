@@ -26,13 +26,21 @@ db="${db//\//_}"
 # fetch the database
 wget $url -O ${tmp_dir}/${db_file_name}".gz" && gunzip $tmp_dir/$db_file_name".gz"
 
-docker exec -it citus_master psql -c "DROP DATABASE IF EXISTS $db;"
-docker exec -it citus_master psql -c "CREATE DATABASE $db WITH OWNER dhis ENCODING 'UTF8';"
-docker exec -it citus_master psql -c "SELECT run_command_on_workers(\$cmd\$ DROP DATABASE IF EXISTS $db \$cmd\$);"
-docker exec -it citus_master psql -c "SELECT run_command_on_workers(\$cmd\$ CREATE DATABASE $db WITH OWNER dhis ENCODING 'UTF8' \$cmd\$);"
-docker exec -it citus_master psql -c "GRANT ALL PRIVILEGES ON DATABASE $db TO dhis;"
-docker exec -it citus_master psql "$db" -c "create extension citus;"
-docker exec -it citus_master psql "$db" -c "create extension postgis;"
-docker exec -i  citus_master psql "$db" -U dhis <$tmp_dir/$db_file_name
+declare -a containers=("citus_master" "citus-worker-1")
+
+for container in "${containers[@]}"
+do
+  docker exec $container psql -c "DROP DATABASE IF EXISTS $db;"
+  docker exec $container psql -c "CREATE DATABASE $db WITH OWNER dhis ENCODING 'UTF8';"
+  docker exec $container psql "$db" -c "create extension citus;"
+  docker exec $container psql "$db" -c "create extension postgis;"
+done
+
+docker exec citus_master psql -c "GRANT ALL PRIVILEGES ON DATABASE $db TO dhis;"
+docker exec -i citus_master psql "$db" -U dhis <$tmp_dir/$db_file_name
+
+# setup the worker
+docker exec citus_master psql -c "SELECT citus_set_coordinator_host('master', 5432)"
+docker exec citus_master psql -c "SELECT * from citus_add_node('worker', 5432)"
 
 rm -fr $tmp_dir

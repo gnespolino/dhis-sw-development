@@ -48,18 +48,11 @@ fi
 #creates a backup of the original catalina.sh
 cp $CATALINA_FOLDER/bin/catalina.sh $CATALINA_FOLDER/bin/catalina.sh.bak
 
-#adds the following snippet starting at line 2 of the catalina.sh
-
-# # MARKER
-# DHIS_CONFIG_PATH=$(source $DHIS_DEV_HOME/conf/build_dhis_conf.sh build)
-# export DHIS2_HOME=$DHIS_CONFIG_PATH/config
-# echo "USING $DHIS2_HOME as DHIS2_HOME folder"
-# # END_MARKER
+#adds code snippet starting at line 2 of the catalina.sh
 sed -i '3i# MARKER' $CATALINA_FOLDER/bin/catalina.sh
-sed -i '4iDHIS_CONFIG_PATH=$(source $DHIS_DEV_HOME/conf/build_dhis_conf.sh build)' $CATALINA_FOLDER/bin/catalina.sh
-sed -i '5iexport DHIS2_HOME=$DHIS_CONFIG_PATH/config' $CATALINA_FOLDER/bin/catalina.sh
-sed -i '6iecho "USING $DHIS2_HOME as DHIS2_HOME folder"' $CATALINA_FOLDER/bin/catalina.sh
-sed -i '7i# END_MARKER' $CATALINA_FOLDER/bin/catalina.sh
+sed -i '4iDHIS2_HOME=$(source $DHIS_DEV_HOME/conf/build_dhis_conf.sh build)' $CATALINA_FOLDER/bin/catalina.sh
+sed -i '5iecho "USING $DHIS2_HOME as DHIS2_HOME folder"' $CATALINA_FOLDER/bin/catalina.sh
+sed -i '6i# END_MARKER' $CATALINA_FOLDER/bin/catalina.sh
 
 echo "Catalina patched"
 exit 0

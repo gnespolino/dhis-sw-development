@@ -30,18 +30,22 @@ declare -a containers=("citus_master" "citus-worker-1")
 
 for container in "${containers[@]}"
 do
-  docker exec $container psql -c "DROP DATABASE IF EXISTS $db;"
-  docker exec $container psql -c "CREATE DATABASE $db WITH OWNER dhis ENCODING 'UTF8';"
-  docker exec $container psql -c "GRANT ALL PRIVILEGES ON DATABASE $db TO dhis;"
-  docker exec $container psql "$db" -c "CREATE EXTENSION citus;"
-  docker exec $container psql "$db" -c "CREATE EXTENSION postgis;"
+  docker exec $container psql postgres -c "DROP EXTENSION IF EXISTS citus;"
+  docker exec $container psql postgres -c "DROP EXTENSION IF EXISTS postgis;"
+  docker exec $container psql postgres -c "DROP DATABASE IF EXISTS $db;"
+  docker exec $container psql postgres -c "CREATE DATABASE $db WITH OWNER dhis ENCODING 'UTF8';"
+  docker exec $container psql postgres -c "GRANT ALL PRIVILEGES ON DATABASE $db TO dhis;"
+  docker exec $container psql $db postgres -c "CREATE EXTENSION citus;"
+  docker exec $container psql $db postgres -c "CREATE EXTENSION postgis;"
 done
 
-docker exec citus_master psql "$db" -c "SELECT citus_set_coordinator_host('master', 5432);"
+# setup the master node
+docker exec citus_master psql $db postgres -c "SELECT citus_set_coordinator_host('master', 5432);"
+# register the worker node
+docker exec citus_master psql $db postgres -c "SELECT * from citus_add_node('worker', 5432)"
+
+# restore the database from the dump
 docker exec -i citus_master psql "$db" -U dhis <$tmp_dir/$db_file_name
 
-# setup the worker
-docker exec citus_master psql -c "SELECT citus_set_coordinator_host('master', 5432)"
-docker exec citus_master psql -c "SELECT * from citus_add_node('worker', 5432)"
-
+# cleanup
 rm -fr $tmp_dir

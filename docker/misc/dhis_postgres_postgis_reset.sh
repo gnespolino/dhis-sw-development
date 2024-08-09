@@ -53,12 +53,12 @@ for i in {1..5}; do
   fi
 done
 
-echo "building dhis-postgres-postgis:$docker_tag"
-#if env is dev tag the image also with latest
+echo "Building dhis-postgres-postgis:$docker_tag"
+
+docker build -t dhis-postgres-postgis:"$docker_tag" --build-arg="DHIS2_VERSION=$env" .
+docker tag dhis-postgres-postgis:"$docker_tag" gnespolino/dhis-postgres-postgis:"$docker_tag"
+
 if [ "$env" == "dev" ]; then
-  echo
-  docker build -t dhis-postgres-postgis:"$docker_tag" -t dhis-postgres-postgis:latest --build-arg="DHIS2_VERSION=$env" .
-else
-  echo
-  docker build -t dhis-postgres-postgis:"$docker_tag" --build-arg="DHIS2_VERSION=$env" .
+  docker tag dhis-postgres-postgis:"$docker_tag" dhis-postgres-postgis:latest
+  docker tag dhis-postgres-postgis:latest gnespolino/dhis-postgres-postgis:latest
 fi

@@ -1,4 +1,4 @@
-FROM postgis/postgis:14-3.4 AS dhis2-postrgres-base
+FROM postgis/postgis:14-3.4 AS dhis2-postgres-base
 
 RUN apt update && apt -yqq upgrade && apt-get -yqq install wget
 
@@ -10,7 +10,7 @@ RUN echo "ALTER SYSTEM SET max_wal_size = '2GB';" > /docker-entrypoint-initdb.d/
 RUN echo "CREATE DATABASE dhis WITH OWNER dhis ENCODING 'UTF8' TEMPLATE template_postgis;" > /docker-entrypoint-initdb.d/15_create_db.sql
 RUN echo "GRANT ALL PRIVILEGES ON DATABASE dhis TO dhis;" > /docker-entrypoint-initdb.d/16_grant_privileges.sql
 
-FROM dhis2-postrgres-base AS dhis2-postgres
+FROM dhis2-postgres-base AS dhis2-postgres
 
 ENV PGUSER=postgres
 ENV POSTGRES_PASSWORD=postgres

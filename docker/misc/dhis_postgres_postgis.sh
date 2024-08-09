@@ -33,8 +33,8 @@ fi
 if [ "$repopulate" == "true" ]; then
   ./dhis_postgres_postgis_reset.sh "$env"
 else
-  if docker ps | grep -q "dhis-postgres-postgis-$env"; then
-    echo "Container dhis-postgres-postgis-$env is already running"
+  if docker ps | grep -q "${DHIS2_DB_IMAGE_NAME}-$env"; then
+    echo "Container ${DHIS2_DB_IMAGE_NAME}-$env is already running"
     exit 0
   fi
 fi
@@ -45,7 +45,7 @@ stop_all_containers
 
 docker_tag=$(normalize_docker_tag $env)
 
-container_name=dhis-postgres-postgis-"$docker_tag"
+container_name=${DHIS2_DB_IMAGE_NAME}-"$docker_tag"
 
 echo "Starting docker container $container_name"
 
@@ -60,7 +60,7 @@ if ! docker ps -a | grep -q "$container_name"; then
     -e PGUSER=postgres\
     -e POSTGRES_HOST_AUTH_METHOD=trust\
     -d \
-   dhis-postgres-postgis:"$docker_tag"
+   ${DHIS2_DB_IMAGE_NAME}:"$docker_tag"
 else
   echo "Docker container $container_name already exists"
   docker start "$container_name"

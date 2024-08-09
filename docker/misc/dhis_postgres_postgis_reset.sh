@@ -23,10 +23,10 @@ echo "building docker image for $env"
 docker_tag=$(normalize_docker_tag "$env")
 
 # delete the image if it exists
-echo "deleting dhis-postgres-postgis-$docker_tag"
+echo "deleting ${DHIS2_DB_IMAGE_NAME}-$docker_tag"
 
 # stops any instances of the container
-containers=$(docker ps -a | grep dhis-postgres-postgis-"$docker_tag" | awk '{print $1}')
+containers=$(docker ps -a | grep ${DHIS2_DB_IMAGE_NAME}-"$docker_tag" | awk '{print $1}')
 for container in $containers; do
   echo "stopping container $container"
   docker stop "$container" --signal KILL || true
@@ -34,12 +34,12 @@ for container in $containers; do
 done
 
 # removes the image
-image=$(docker images dhis-postgres-postgis | grep "$docker_tag" | awk '{print $3}')
+image=$(docker images ${DHIS2_DB_IMAGE_NAME} | grep "$docker_tag" | awk '{print $3}')
 echo "deleting image $image"
 docker rmi "$image" --force || true
 if [ "$env" == "dev" ]; then
-  echo "deleting dhis-postgres-postgis:latest"
-  docker rmi dhis-postgres-postgis:latest --force || true
+  echo "deleting ${DHIS2_DB_IMAGE_NAME}:latest"
+  docker rmi ${DHIS2_DB_IMAGE_NAME}:latest --force || true
 fi
 
 # retries 5 times to remove the volumes until there are no more
@@ -53,12 +53,12 @@ for i in {1..5}; do
   fi
 done
 
-echo "Building dhis-postgres-postgis:$docker_tag"
+echo "Building ${DHIS2_DB_IMAGE_NAME}:$docker_tag"
 
-docker build -t dhis-postgres-postgis:"$docker_tag" --build-arg="DHIS2_VERSION=$env" .
-docker tag dhis-postgres-postgis:"$docker_tag" gnespolino/dhis-postgres-postgis:"$docker_tag"
+docker build -t ${DHIS2_DB_IMAGE_NAME}:"$docker_tag" --build-arg="DHIS2_VERSION=$env" .
+docker tag ${DHIS2_DB_IMAGE_NAME}:"$docker_tag" gnespolino/${DHIS2_DB_IMAGE_NAME}:"$docker_tag"
 
 if [ "$env" == "dev" ]; then
-  docker tag dhis-postgres-postgis:"$docker_tag" dhis-postgres-postgis:latest
-  docker tag dhis-postgres-postgis:latest gnespolino/dhis-postgres-postgis:latest
+  docker tag ${DHIS2_DB_IMAGE_NAME}:"$docker_tag" ${DHIS2_DB_IMAGE_NAME}:latest
+  docker tag ${DHIS2_DB_IMAGE_NAME}:latest gnespolino/${DHIS2_DB_IMAGE_NAME}:latest
 fi

@@ -4,6 +4,8 @@ declare -a allowed_envs=("dev" "2.39" "2.40" "2.41" "2.39.0/analytics_be" "2.39.
 
 export allowed_envs
 
+export DHIS2_DB_IMAGE_NAME="dhis2-db-sl"
+
 #defines a function to send notifications
 send_notification() {
   if [ -x "$(command -v notify-send)" ]; then
@@ -63,12 +65,12 @@ build_docker_image() {
   docker_tag=$(normalize_docker_tag $env)
 
   # builds dhis postgres-postgis image for specified version if it doesn't exist
-  if ! docker images | grep -q dhis-postgres-postgis | grep -q "$docker_tag" ; then
+  if ! docker images | grep -q ${DHIS2_DB_IMAGE_NAME} | grep -q "$docker_tag" ; then
       #if env is dev tag the image also with latest
       if [ "$env" == "dev" ]; then
-        docker build -t dhis-postgres-postgis:"$docker_tag" -t dhis-postgres-postgis:latest --build-arg="DHIS2_VERSION=$env" .
+        docker build -t ${DHIS2_DB_IMAGE_NAME}:"$docker_tag" -t ${DHIS2_DB_IMAGE_NAME}:latest --build-arg="DHIS2_VERSION=$env" .
       else
-        docker build -t dhis-postgres-postgis:"$docker_tag" --build-arg="DHIS2_VERSION=$env" .
+        docker build -t ${DHIS2_DB_IMAGE_NAME}:"$docker_tag" --build-arg="DHIS2_VERSION=$env" .
       fi
   fi
 }
@@ -78,7 +80,7 @@ stop_all_containers() {
   do
     # set image name replacing dots and slashes with underscores, in one line
     docker_tag=$(echo $allowed_env | sed 's/[/]/-/g')
-    container_name=dhis-postgres-postgis-"$docker_tag"
+    container_name=${DHIS2_DB_IMAGE_NAME}-"$docker_tag"
     # stop the docker container
     docker stop "$container_name"
   done

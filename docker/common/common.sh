@@ -62,17 +62,44 @@ ask_repopulate() {
 
 build_docker_image() {
   env=$1
+  image_name=$2
   docker_tag=$(normalize_docker_tag $env)
 
   # builds dhis postgres-postgis image for specified version if it doesn't exist
-  if ! docker images | grep -q ${DHIS2_DB_IMAGE_NAME} | grep -q "$docker_tag" ; then
+  if ! docker images | grep -q "${image_name}" | grep -q "$docker_tag" ; then
       #if env is dev tag the image also with latest
+      docker build -t "${image_name}":"$docker_tag" --build-arg="DHIS2_VERSION=$env" .
       if [ "$env" == "dev" ]; then
-        docker build -t ${DHIS2_DB_IMAGE_NAME}:"$docker_tag" -t ${DHIS2_DB_IMAGE_NAME}:latest --build-arg="DHIS2_VERSION=$env" .
-      else
-        docker build -t ${DHIS2_DB_IMAGE_NAME}:"$docker_tag" --build-arg="DHIS2_VERSION=$env" .
+        docker tag "${image_name}":"$docker_tag" "${image_name}":latest
       fi
   fi
+}
+
+reset_container() {
+  env=$1
+  container_name=$2
+  volume_name=$3
+
+  # delete the image if it exists
+  echo "deleting container ${container_name}"
+
+  # stops any instances of the container
+  docker ps -a
+
+  containers=$(docker ps -a | grep "${container_name}" | awk '{print $1}')
+  for container in $containers; do
+    echo "stopping container $container"
+    docker stop "$container" --signal KILL || true
+    echo "removing container $container"
+    docker rm "$container" --force || true
+  done
+
+  # removes the volume
+  echo "deleting volume ${volume_name}"
+  docker volume rm "${volume_name}" --force || true
+
+  echo "Volumes after deletion"
+  docker volume ls
 }
 
 stop_all_containers() {

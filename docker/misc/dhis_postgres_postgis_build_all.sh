@@ -10,7 +10,7 @@ source ../common/common.sh
 
 for allowed_env in "${allowed_envs[@]}"; do
   echo "building docker image for $allowed_env"
-  ./dhis_postgres_postgis_reset.sh "$allowed_env"
+  build_docker_image "$allowed_env" "$DHIS2_DB_IMAGE_NAME"
 done
 
 cd "$current_dir" || exit

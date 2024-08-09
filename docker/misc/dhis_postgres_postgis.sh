@@ -39,11 +39,11 @@ else
   fi
 fi
 
-build_docker_image $env
+build_docker_image "$env" "$DHIS2_DB_IMAGE_NAME"
 
 stop_all_containers
 
-docker_tag=$(normalize_docker_tag $env)
+docker_tag=$(normalize_docker_tag "$env")
 
 container_name=${DHIS2_DB_IMAGE_NAME}-"$docker_tag"
 

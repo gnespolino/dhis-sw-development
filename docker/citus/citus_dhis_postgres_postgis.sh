@@ -66,8 +66,6 @@ else
   docker start "$container_name"
 fi
 
-pg_is_up=false # postgres is not up yet
-
 # waits for postgres to finish initdb
 for i in {1..100}
 do
@@ -77,17 +75,11 @@ do
   if [[ $pg_pids == *" 1 "* ]]
   then
     echo "postgres is up"
-    pg_is_up=true
     break
   fi
   echo "Waiting for postgres to start [$i/100]"
   sleep 3
 done
-
-if [ "$pg_is_up" = false ]; then
-  echo "postgres failed to start"
-  exit 1
-fi
 
 #changes directory back to the original directory
 cd "$current_dir" || exit

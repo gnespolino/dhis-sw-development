@@ -66,7 +66,7 @@ build_docker_image() {
   docker_tag=$(normalize_docker_tag $env)
 
   # builds dhis postgres-postgis image for specified version if it doesn't exist
-  if ! docker images | grep -q "${image_name}" | grep -q "$docker_tag" ; then
+  if ! docker images | grep "${image_name}" | grep -q "$docker_tag" ; then
       #if env is dev tag the image also with latest
       docker build -t "${image_name}":"$docker_tag" --build-arg="DHIS2_VERSION=$env" .
       if [ "$env" == "dev" ]; then

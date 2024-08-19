@@ -29,11 +29,14 @@ else
   repopulate=$1
 fi
 
+docker_tag=$(normalize_docker_tag "$env")
+container_name=${DHIS2_DB_IMAGE_NAME}-"$docker_tag"
+
 # if repopulate is true, remove the database volume
 if [ "$repopulate" == "true" ]; then
   ./dhis_postgres_postgis_reset.sh "$env"
 else
-  if docker ps | grep -q "${DHIS2_DB_IMAGE_NAME}-$env"; then
+  if docker ps | grep -q "${container_name}"; then
     echo "Container ${DHIS2_DB_IMAGE_NAME}-$env is already running"
     exit 0
   fi
@@ -42,10 +45,6 @@ fi
 build_docker_image "$env" "$DHIS2_DB_IMAGE_NAME"
 
 stop_all_containers
-
-docker_tag=$(normalize_docker_tag "$env")
-
-container_name=${DHIS2_DB_IMAGE_NAME}-"$docker_tag"
 
 echo "Starting docker container $container_name"
 

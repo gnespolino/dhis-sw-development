@@ -106,9 +106,9 @@ stop_all_containers() {
   for allowed_env in "${allowed_envs[@]}"
   do
     # set image name replacing dots and slashes with underscores, in one line
-    docker_tag=$(echo $allowed_env | sed 's/[/]/-/g')
-    container_name=${DHIS2_DB_IMAGE_NAME}-"$docker_tag"
+    docker_tag_for_stop=$(echo $allowed_env | sed 's/[/]/-/g')
+    container_name_for_stop=${DHIS2_DB_IMAGE_NAME}-"$docker_tag_for_stop"
     # stop the docker container
-    docker stop "$container_name"
+    docker stop "$container_name_for_stop"
   done
 }

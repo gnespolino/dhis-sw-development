@@ -19,7 +19,7 @@ check_env "$env"
 
 echo "Reset container for environment $env"
 
-#remoives slash from the env
+#removes slash from the env
 docker_tag=$(normalize_docker_tag "$env")
 db=$(normalize_db_name "$env")
 

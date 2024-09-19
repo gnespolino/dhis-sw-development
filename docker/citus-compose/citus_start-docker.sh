@@ -39,7 +39,7 @@ db=$(echo "dhis2_$env" | sed 's/[./]/_/g')
 
 # use second args as "repopulate", or ask the user
 if [ -z "$1" ]; then
-  repopulate=$(zenity --question --text="Do you want to repopulate the database?")
+  ask_repopulate
 else
   repopulate=$1
 fi
@@ -50,14 +50,7 @@ if ! docker images | grep -q citus-postgis; then
   docker build -t citus-postgis ../common/
 fi
 
-# for each allowed_envs, stop the docker containers if running
-for allowed_env in "${allowed_envs[@]}"
-do
-  # set image name replacing dots and slashes with underscores, in one line
-  image_name=$(echo "dhis2_$allowed_env" | sed 's/[./]/_/g')
-  # stop the docker container
-  docker-compose -p "$image_name""_citus" down
-done
+stop_all_containers
 
 echo "Starting docker containers"
 # start the docker container
@@ -77,6 +70,8 @@ do
   echo "Waiting for postgres to start"
   sleep 1
 done
+
+echo $repopulate
 
 # if repopulate is true, restore the database
 if [ "$repopulate" = false ]; then

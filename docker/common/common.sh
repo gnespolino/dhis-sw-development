@@ -5,6 +5,7 @@ declare -a allowed_envs=("dev" "2.39" "2.40" "2.41" "2.39.0/analytics_be" "2.39.
 export allowed_envs
 
 export DHIS2_DB_IMAGE_NAME="dhis2-db-sl"
+export DHIS2_CITUS_DB_IMAGE_NAME="dhis2-db-sl"
 
 #defines a function to send notifications
 send_notification() {
@@ -62,15 +63,15 @@ ask_repopulate() {
 
 build_docker_image() {
   env=$1
-  image_name=$2
+  image_name_container_name_for_stop=$2
   docker_tag=$(normalize_docker_tag $env)
 
   # builds dhis postgres-postgis image for specified version if it doesn't exist
-  if ! docker images | grep "${image_name}" | grep -q "$docker_tag" ; then
+  if ! docker images | grep "${image_name_container_name_for_stop}" | grep -q "$docker_tag" ; then
       #if env is dev tag the image also with latest
-      docker build -t "${image_name}":"$docker_tag" --build-arg="DHIS2_VERSION=$env" .
+      docker build -t "${image_name_container_name_for_stop}":"$docker_tag" --build-arg="DHIS2_VERSION=$env" .
       if [ "$env" == "dev" ]; then
-        docker tag "${image_name}":"$docker_tag" "${image_name}":latest
+        docker tag "${image_name_container_name_for_stop}":"$docker_tag" "${image_name_container_name_for_stop}":latest
       fi
   fi
 }
@@ -110,5 +111,13 @@ stop_all_containers() {
     container_name_for_stop=${DHIS2_DB_IMAGE_NAME}-"$docker_tag_for_stop"
     # stop the docker container
     docker stop "$container_name_for_stop"
+  done
+  # for each allowed_envs, stop the docker containers if running
+  for current_env in "${allowed_envs[@]}"
+  do
+    # set image name replacing dots and slashes with underscores, in one line
+    image_name_container_name_for_stop=$(echo "dhis2_$current_env" | sed 's/[./]/_/g')
+    # stop the docker container
+    docker-compose -p "$image_name_container_name_for_stop""_citus" down
   done
 }

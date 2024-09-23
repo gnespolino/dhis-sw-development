@@ -6,7 +6,7 @@ current_dir=$(pwd)
 #changes directory to the directory of the script
 cd "$(dirname "$0")" || exit
 
-# import from libs/common.sh
+# import from common/common.sh
 source ../common/common.sh
 
 # set env as second param or ask the user
